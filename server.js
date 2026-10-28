@@ -33,7 +33,10 @@ const HOST = process.env.HOST || '127.0.0.1';
 const SCAN_SETTINGS_FILE = path.join(ROOT, 'scan-settings.json');
 const execFileAsync = promisify(execFile);
 const grpcurl = process.env.GRPCURL_PATH || path.join(LEGACY_ROOT, 'tools', 'grpcurl.exe');
-const embeddedAsset = (name) => getAsset(name);
+const embeddedAsset = (name) => {
+  const asset = getAsset(name);
+  return Buffer.isBuffer(asset) ? asset : Buffer.from(asset);
+};
 const resolveGrpcurl = async () => {
   if (!SEA) return grpcurl;
   const target = path.join(ROOT, 'runtime', 'grpcurl.exe');
@@ -1229,7 +1232,12 @@ const serveFile = async (req, res) => {
         : 'text/html';
     res.writeHead(200, { 'content-type': `${type}; charset=utf-8`, 'cache-control': 'no-cache' });
     res.end(data);
-  } catch {
+  } catch (error) {
+    console.error(`Could not serve ${requestPath}: ${error.message}`);
+    if (res.headersSent) {
+      res.destroy(error);
+      return;
+    }
     res.writeHead(404);
     res.end('Not found');
   }
