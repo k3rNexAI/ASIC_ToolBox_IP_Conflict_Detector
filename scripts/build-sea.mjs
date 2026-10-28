@@ -16,6 +16,7 @@ function run(command, args) {
   const result = spawnSync(command, args, {
     cwd: ROOT,
     stdio: 'inherit',
+    timeout: 180_000,
   });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`${command} завершился с кодом ${result.status}`);
@@ -80,6 +81,20 @@ await writeFile(
 );
 run(process.execPath, ['--experimental-sea-config', configPath]);
 await copyFile(process.execPath, executable);
+const rceditPath = path.join(WORK, 'rcedit-x64.exe');
+const rceditUrl =
+  'https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe';
+const rceditSha256 = '3e7801db1a5edbec91b49a24a094aad776cb4515488ea5a4ca2289c400eade2a';
+console.log('Downloading pinned rcedit v2.0.0 to set the Windows app icon...');
+const rceditResponse = await fetch(rceditUrl, { signal: AbortSignal.timeout(30_000) });
+if (!rceditResponse.ok) throw new Error(`Не удалось скачать rcedit: HTTP ${rceditResponse.status}`);
+const rceditBytes = Buffer.from(await rceditResponse.arrayBuffer());
+const actualSha256 = createHash('sha256').update(rceditBytes).digest('hex');
+if (actualSha256 !== rceditSha256) throw new Error('SHA-256 rcedit не совпадает с ожидаемым');
+await writeFile(rceditPath, rceditBytes);
+console.log('Applying public/app-icon.ico to the Windows executable...');
+run(rceditPath, [executable, '--set-icon', path.join(ROOT, 'public', 'app-icon.ico')]);
+console.log('Windows icon installed. Injecting the SEA payload...');
 run(process.execPath, [
   path.join(ROOT, 'node_modules', 'postject', 'dist', 'cli.js'),
   executable,
@@ -88,18 +103,6 @@ run(process.execPath, [
   '--sentinel-fuse',
   fuse,
 ]);
-
-const rceditPath = path.join(WORK, 'rcedit-x64.exe');
-const rceditUrl =
-  'https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe';
-const rceditSha256 = '3e7801db1a5edbec91b49a24a094aad776cb4515488ea5a4ca2289c400eade2a';
-const rceditResponse = await fetch(rceditUrl);
-if (!rceditResponse.ok) throw new Error(`Не удалось скачать rcedit: HTTP ${rceditResponse.status}`);
-const rceditBytes = Buffer.from(await rceditResponse.arrayBuffer());
-const actualSha256 = createHash('sha256').update(rceditBytes).digest('hex');
-if (actualSha256 !== rceditSha256) throw new Error('SHA-256 rcedit не совпадает с ожидаемым');
-await writeFile(rceditPath, rceditBytes);
-run(rceditPath, [executable, '--set-icon', path.join(ROOT, 'public', 'app-icon.ico')]);
 
 console.log(`Готов единый исполняемый файл: ${executable}`);
 console.log('Windows icon установлен из public/app-icon.ico.');
