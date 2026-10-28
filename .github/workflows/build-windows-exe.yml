@@ -26,6 +26,42 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run build:windows
+      - name: Smoke-test packaged server
+        shell: pwsh
+        run: |
+          $env:PORT = "44180"
+          $env:ASIC_TOOLBOX_NO_BROWSER = "1"
+          $exe = (Resolve-Path "dist/ASIC ToolBox.exe").Path
+          $stdout = Join-Path $env:RUNNER_TEMP "asic-toolbox-smoke.stdout.log"
+          $stderr = Join-Path $env:RUNNER_TEMP "asic-toolbox-smoke.stderr.log"
+          $process = Start-Process -FilePath $exe -PassThru -NoNewWindow -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          $ready = $false
+          try {
+            $deadline = (Get-Date).AddSeconds(25)
+            while ((Get-Date) -lt $deadline -and -not $ready) {
+              $process.Refresh()
+              if ($process.HasExited) {
+                throw "EXE exited early. stdout: $(Get-Content $stdout -Raw -ErrorAction SilentlyContinue) stderr: $(Get-Content $stderr -Raw -ErrorAction SilentlyContinue)"
+              }
+              for ($port = 44180; $port -lt 44200; $port++) {
+                try {
+                  $response = Invoke-WebRequest -Uri "http://127.0.0.1:$port/" -TimeoutSec 2
+                  if ($response.StatusCode -eq 200 -and $response.Content.Contains("ASIC ToolBox")) {
+                    $ready = $true
+                    Write-Host "HTTP smoke test passed at http://127.0.0.1:$port/"
+                    break
+                  }
+                } catch {}
+              }
+              if (-not $ready) { Start-Sleep -Milliseconds 500 }
+            }
+            if (-not $ready) {
+              throw "EXE did not serve the UI within 25 seconds. stdout: $(Get-Content $stdout -Raw -ErrorAction SilentlyContinue) stderr: $(Get-Content $stderr -Raw -ErrorAction SilentlyContinue)"
+            }
+          } finally {
+            $process.Refresh()
+            if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: ASIC-ToolBox-Windows-SEA

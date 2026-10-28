@@ -1884,7 +1884,7 @@ const listenOnAvailablePort = async () => {
         server.listen(port, HOST);
       });
       console.log(`ASIC ToolBox listening on http://${HOST}:${port}`);
-      if (SEA) {
+      if (SEA && process.env.ASIC_TOOLBOX_NO_BROWSER !== '1') {
         const browser = spawn(
           'cmd.exe',
           ['/d', '/s', '/c', 'start', '""', `http://${HOST}:${port}`],
