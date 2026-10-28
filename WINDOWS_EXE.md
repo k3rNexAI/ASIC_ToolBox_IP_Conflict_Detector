@@ -11,7 +11,9 @@ npm ci
 npm run build:windows
 ```
 
-The build bundles `server.js` and its JavaScript dependencies with esbuild, creates a Node SEA blob with the current Node executable, and injects it into that same executable using `postject`. The output folder contains the distributable EXE. Building on Linux/macOS is intentionally rejected: the SEA executable must be assembled with a Windows Node binary and PE injection tooling.
+The build bundles `server.js` and its JavaScript dependencies with esbuild, creates a Node SEA blob with the current Node executable, and injects it into that same executable using `postject`. It then downloads the official `electron/rcedit` v2.0.0 x64 tool, verifies its pinned SHA-256, and installs `public/app-icon.ico` as the Windows executable icon.
+
+After a local build, find the file at `dist\ASIC ToolBox.exe` in the project directory. To get the CI build, open the successful run in the repository's **Actions** tab, then download the `ASIC-ToolBox-Windows-SEA` artifact; the downloaded ZIP contains `ASIC ToolBox.exe`. Building on Linux/macOS is intentionally rejected: the SEA executable must be assembled with a Windows Node binary and PE injection tooling.
 
 ## Run and data location
 

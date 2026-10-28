@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { copyFile, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -88,5 +89,18 @@ run(process.execPath, [
   fuse,
 ]);
 
+const rceditPath = path.join(WORK, 'rcedit-x64.exe');
+const rceditUrl =
+  'https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe';
+const rceditSha256 = '3e7801db1a5edbec91b49a24a094aad776cb4515488ea5a4ca2289c400eade2a';
+const rceditResponse = await fetch(rceditUrl);
+if (!rceditResponse.ok) throw new Error(`Не удалось скачать rcedit: HTTP ${rceditResponse.status}`);
+const rceditBytes = Buffer.from(await rceditResponse.arrayBuffer());
+const actualSha256 = createHash('sha256').update(rceditBytes).digest('hex');
+if (actualSha256 !== rceditSha256) throw new Error('SHA-256 rcedit не совпадает с ожидаемым');
+await writeFile(rceditPath, rceditBytes);
+run(rceditPath, [executable, '--set-icon', path.join(ROOT, 'public', 'app-icon.ico')]);
+
 console.log(`Готов единый исполняемый файл: ${executable}`);
+console.log('Windows icon установлен из public/app-icon.ico.');
 console.log('Для запуска пользователю достаточно скопировать только этот EXE.');

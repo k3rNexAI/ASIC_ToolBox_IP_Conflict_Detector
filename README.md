@@ -1,6 +1,6 @@
 # ASIC ToolBox — Single-File Windows EXE
 
-**Это отдельный вариант проекта ASIC ToolBox для сборки одного автономного Windows `.exe`.** Исходный проект распространяется в portable-папке; этот вариант использует Node.js SEA и встраивает сервер, Node runtime, интерфейс, npm-зависимости и `grpcurl.exe` внутрь исполняемого файла. Для сборки на Windows выполните `npm ci` и `npm run build:windows`; результат появится в `dist/ASIC ToolBox.exe`. GitHub Actions также собирает Windows-артефакт. Подробности: [WINDOWS_EXE.md](WINDOWS_EXE.md).
+**Это отдельный вариант проекта ASIC ToolBox для сборки одного автономного Windows `.exe`.** Исходный проект распространяется в portable-папке; этот вариант использует Node.js SEA и встраивает сервер, Node runtime, интерфейс, npm-зависимости и `grpcurl.exe` внутрь исполняемого файла. Иконка EXE берётся из `public/app-icon.ico`. Для сборки на Windows выполните `npm ci` и `npm run build:windows`; результат появится в `dist/ASIC ToolBox.exe`. Из GitHub Actions скачайте артефакт `ASIC-ToolBox-Windows-SEA` со страницы успешного запуска во вкладке **Actions**; внутри ZIP будет тот же EXE. Подробности: [WINDOWS_EXE.md](WINDOWS_EXE.md).
 
 Пользовательские данные этой версии сохраняются в `%LOCALAPPDATA%\ASIC ToolBox`, а не рядом с EXE. При первом запуске из старой portable-папки данные переносятся автоматически, если соответствующих файлов ещё нет в новом каталоге.
 
