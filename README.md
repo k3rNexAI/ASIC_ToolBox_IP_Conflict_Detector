@@ -80,7 +80,7 @@ npm start
 
 ## Журнал разработки
 
-Текущая версия: **1.4.6**. История изменений находится в [CHANGELOG.md](CHANGELOG.md), инженерный журнал и план работ — в [docs/PROJECT_LOG.md](docs/PROJECT_LOG.md). Методика и ограничения проверки задвоений IP описаны в [docs/IP_CONFLICTS.md](docs/IP_CONFLICTS.md).
+Текущая версия: **1.5.0**. История изменений находится в [CHANGELOG.md](CHANGELOG.md), инженерный журнал и план работ — в [docs/PROJECT_LOG.md](docs/PROJECT_LOG.md). Методика и ограничения проверки задвоений IP описаны в [docs/IP_CONFLICTS.md](docs/IP_CONFLICTS.md).
 
 ## Расширенная техническая документация
 
