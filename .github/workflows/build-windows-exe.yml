@@ -3,7 +3,7 @@ name: Build Windows single-file EXE
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [feature/ip-duplicate-detector]
     paths:
       - 'server.js'
       - 'miner-compat.js'
