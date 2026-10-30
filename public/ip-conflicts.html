@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Конфликты IP — ASIC ToolBox</title>
+    <link rel="icon" href="/app-icon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="styles.css?v=1.4.6" />
+    <link rel="stylesheet" href="/themes.css?v=1.4.6" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('asic-toolbox-theme');
+          if (['original', 'soft-dark', 'mist-sage'].indexOf(t) !== -1)
+            document.documentElement.dataset.theme = t;
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      .conflict-intro {
+        color: var(--muted);
+        line-height: 1.7;
+        max-width: 900px;
+      }
+      .conflict-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 12px;
+      }
+      .conflict-controls label {
+        display: grid;
+        gap: 7px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .conflict-controls select {
+        min-width: 180px;
+      }
+      .conflict-controls input {
+        width: 110px;
+      }
+      .conflict-warning {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border-left: 3px solid var(--amber);
+        background: #ffb84d12;
+        color: #c8b894;
+        font-size: 12px;
+        line-height: 1.7;
+      }
+      .conflict-progress {
+        margin-top: 18px;
+        color: var(--cyan);
+        font: 12px var(--mono);
+      }
+      .conflict-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 18px 0;
+      }
+      .conflict-summary span {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        background: var(--panel2);
+        font: 12px var(--mono);
+      }
+      .conflict-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      .conflict-table th,
+      .conflict-table td {
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+      .conflict-table th {
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+      }
+      .conflict-table code {
+        font: 11px var(--mono);
+        overflow-wrap: anywhere;
+      }
+      .conflict-state {
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .conflict-state.confirmed {
+        color: var(--red);
+      }
+      .conflict-state.possible {
+        color: var(--amber);
+      }
+      .conflict-empty {
+        padding: 30px;
+        text-align: center;
+        color: var(--muted);
+      }
+      @media (max-width: 760px) {
+        .conflict-controls {
+          align-items: stretch;
+          flex-direction: column;
+        }
+        .conflict-controls select,
+        .conflict-controls input {
+          width: 100%;
+        }
+        .conflict-table-wrap {
+          overflow-x: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="rail">
+        <div class="brand">
+          <a href="/" aria-label="ASIC ToolBox — главная"
+            ><strong>ASIC</strong><span>TOOLBOX</span></a
+          >
+        </div>
+        <div class="rail-label">РАБОЧЕЕ МЕСТО</div>
+        <a class="rail-link" href="/#overview"><span>⌂</span> Обзор</a>
+        <a class="rail-link" href="/#cods"><span>▦</span> ЦОДы</a>
+        <div id="railCods" class="rail-cod-list"><div class="rail-empty">Загрузка ЦОДов…</div></div>
+        <a class="rail-link scan-anchor" href="/#scan"><span>◉</span> Сканирование</a>
+        <a class="rail-link" href="/maps.html"><span>▦</span> Карты и результат</a>
+        <a class="rail-link" href="/map-builder.html"><span>⚙</span> Настройка карт</a>
+        <a class="rail-link ip-conflict-link active" href="/ip-conflicts.html"
+          ><span>⌕</span> Конфликты IP</a
+        >
+        <a class="rail-link" href="/#mixes"><span>◌</span> Миксы</a>
+        <a class="rail-link" href="/#board-control"><span>⚙</span> Управление платами</a>
+        <div class="rail-spacer"></div>
+        <a class="rail-link guide-link" href="/guide.html"><span>?</span> Руководство</a>
+        <div class="theme-picker">
+          <label for="theme-switch">ТЕМА ОФОРМЛЕНИЯ</label>
+          <select id="theme-switch" data-theme-switch aria-label="Выбрать тему оформления">
+            <option value="original">Оригинальная</option>
+            <option value="soft-dark">Тёмная</option>
+            <option value="mist-sage">Светлая</option>
+          </select>
+        </div>
+        <div class="rail-footer"><span class="dot live"></span><span>Локальный режим</span></div>
+      </aside>
+      <main>
+        <header class="topbar">
+          <div>
+            <div class="eyebrow">ASIC TOOLBOX / NETWORK DIAGNOSTICS</div>
+            <h1>Проверка задвоений IP</h1>
+          </div>
+          <div class="top-meta">
+            <a class="button secondary" href="/">К основному инструменту</a>
+          </div>
+        </header>
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">01 / IP IDENTITY CHECK</div>
+              <h2>Поиск нескольких ASIC на одном адресе</h2>
+            </div>
+          </div>
+          <p class="conflict-intro">
+            Инструмент несколько раз опрашивает IP выбранного ЦОДа теми же Braiins REST/gRPC или
+            legacy API, что и основной сканер. Сравниваются серийные номера ASIC, MAC из локальной
+            таблицы соседей и, как менее надёжный сигнал, модель/версия/платы.
+          </p>
+          <div class="conflict-warning">
+            Сканирование создаёт дополнительный сетевой трафик: каждый IP опрашивается несколько
+            раз. Оставьте компьютер в той же VLAN, что и ASIC: при маршрутизации таблица соседей
+            может содержать MAC шлюза. Подтверждённым считается различие серийных номеров; смена MAC
+            сильна только в локальном сегменте. Проверьте найденные конфликты на коммутаторе/DHCP и
+            не считайте отсутствие сигналов гарантией отсутствия конфликта.
+          </div>
+          <div class="section-head" style="margin-top: 22px; margin-bottom: 0">
+            <div class="conflict-controls">
+              <label
+                >ЦОД<select id="codSelect">
+                  <option value="">Загрузка ЦОДов…</option>
+                </select></label
+              >
+              <label
+                >Раунды (2–6)<input id="rounds" type="number" min="2" max="6" value="3"
+              /></label>
+              <label
+                >Протокол<select id="protocol">
+                  <option value="rest">REST</option>
+                  <option value="grpc">gRPC</option>
+                  <option value="legacy">TCP 4028</option>
+                  <option value="auto">Auto</option>
+                  <option value="hybrid">Hybrid</option>
+                </select></label
+              >
+              <button class="button primary" id="runBtn" disabled>⌕ Проверить IP</button>
+              <button class="button secondary" id="cancelBtn" hidden>Отменить</button>
+            </div>
+          </div>
+          <div id="progress" class="conflict-progress" hidden></div>
+        </section>
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">02 / FINDINGS</div>
+              <h2>Результаты проверки</h2>
+            </div>
+          </div>
+          <div id="summary" class="conflict-summary" hidden></div>
+          <div id="results" class="conflict-empty">Выберите ЦОД и запустите проверку.</div>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast"></div>
+    <script src="/ip-conflicts.js?v=1.4.6"></script>
+    <script src="/theme.js?v=1.4.6"></script>
+  </body>
+</html>

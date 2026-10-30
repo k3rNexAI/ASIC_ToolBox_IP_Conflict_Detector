@@ -13,6 +13,7 @@ import {
   normalizeCgminerResult,
   scanProtocolOrder,
 } from './miner-compat.js';
+import { analyzeIpObservations, normalizeMac } from './ip-conflicts.js';
 import { mixes } from './mix-algorithm.js';
 
 const SEA = isSea();
@@ -505,6 +506,33 @@ const ipToNum = (ip) => {
     : null;
 };
 const numToIp = (n) => [n >>> 24, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
+/** Читает MAC из локальной таблицы соседей после запроса к ASIC. При маршрутизируемой сети это может быть MAC шлюза, поэтому значение используется только как дополнительное доказательство. */
+const readNeighborMac = async (ip) => {
+  const commands =
+    process.platform === 'win32'
+      ? [['arp', ['-a', ip]]]
+      : [
+          ['ip', ['neigh', 'show', 'to', ip]],
+          ['arp', ['-an', ip]],
+        ];
+  for (const [command, args] of commands) {
+    try {
+      const { stdout } = await execFileAsync(command, args, {
+        timeout: 1500,
+        windowsHide: true,
+        maxBuffer: 64 * 1024,
+      });
+      for (const line of stdout.split(/\r?\n/)) {
+        if (!line.includes(ip)) continue;
+        const match = line.match(/(?:[a-f\d]{2}[:-]){5}[a-f\d]{2}/i);
+        if (match) return normalizeMac(match[0]);
+      }
+    } catch {
+      // ARP/neigh utilities are platform-dependent and may be unavailable without privileges.
+    }
+  }
+  return '';
+};
 /** Принимает CIDR или начальный и конечный IPv4 и возвращает массив адресов. Проверяет формат, границы и лимит адресов, чтобы не запустить ошибочное или чрезмерно большое сканирование; используется при проверке и запуске скана. */
 const expandRange = (start, end, cidr) => {
   if (cidr) {
@@ -689,6 +717,16 @@ const restScanOne = async (ip, signal) => {
     restCall(ip, '/api/v1/cooling/state', { token, signal }).catch(() => ({ fans: [] })),
   ]);
   const identity = details.miner_identity || details.minerIdentity || {};
+  const serialNumber =
+    identity.serial_number ||
+    identity.serialNumber ||
+    identity.serial ||
+    identity.sn ||
+    details.serial_number ||
+    details.serialNumber ||
+    details.serial ||
+    details.sn ||
+    '';
   const boards = firstArray(hashboards, ['hashboards', 'hashBoards', 'boards']);
   const expected = 3;
   const boardDetails = boards.slice(0, expected).map((b, i) => ({
@@ -763,6 +801,7 @@ const restScanOne = async (ip, signal) => {
     api: `REST ${scannerSettings.restPort}`,
     firmwareFamily: 'braiins',
     firmwareName: 'Braiins OS',
+    serialNumber: String(serialNumber || '').trim(),
     minerState,
     model,
     boardModel,
@@ -829,6 +868,16 @@ const gRPCScanOne = async (ip, signal) => {
     ),
   ]);
   const identity = details.minerIdentity || details.miner_identity || {};
+  const serialNumber =
+    identity.serial_number ||
+    identity.serialNumber ||
+    identity.serial ||
+    identity.sn ||
+    details.serial_number ||
+    details.serialNumber ||
+    details.serial ||
+    details.sn ||
+    '';
   const boards = firstArray(hashboards, ['hashboards', 'hashBoards', 'boards']);
   const expected = 3;
   const boardDetails = boards.slice(0, expected).map((b, i) => ({
@@ -869,6 +918,7 @@ const gRPCScanOne = async (ip, signal) => {
     api: `gRPC ${scannerSettings.grpcPort}`,
     firmwareFamily: 'braiins',
     firmwareName: 'Braiins OS',
+    serialNumber: String(serialNumber || '').trim(),
     minerState,
     model,
     boardModel,
@@ -1813,6 +1863,117 @@ const server = http.createServer(async (req, res) => {
         return json(res, 200, { checkedAt: new Date().toISOString(), protocol, devices: results });
       } finally {
         monitorLock = false;
+      }
+    }
+    if (req.method === 'POST' && req.url === '/api/ip-conflicts') {
+      if (scanLock || monitorLock)
+        return json(res, 409, { error: 'Сканирование или мониторинг уже выполняется' });
+      scanLock = true;
+      const controller = new AbortController();
+      const signal = controller.signal;
+      activeScanController = controller;
+      let progressStarted = false;
+      try {
+        const b = await body(req);
+        const cod = (await readCods()).find((x) => x.id === b.codId);
+        if (!cod) return json(res, 404, { error: 'ЦОД не найден' });
+        const rounds = Number(b.rounds);
+        if (!Number.isInteger(rounds) || rounds < 2 || rounds > 6)
+          return json(res, 400, { error: 'Число раундов должно быть от 2 до 6' });
+        const protocol = validScanProtocols.has(b.protocol) ? b.protocol : scannerSettings.protocol;
+        const maps = await readMaps();
+        const cells = maps[cod.id]?.cells;
+        const mappedIps = Array.isArray(cells)
+          ? [
+              ...new Set(
+                cells
+                  .map((cell) => String(cell?.ip || '').trim())
+                  .filter((ip) => ipToNum(ip) !== null),
+              ),
+            ]
+          : [];
+        const ips = mappedIps.length ? mappedIps : expandRange(cod.start, cod.end, cod.cidr);
+        if (!ips.length)
+          return json(res, 400, { error: 'В выбранном ЦОДе нет валидных IP-адресов' });
+        if (ips.length > scannerSettings.maxScanIps)
+          return json(res, 400, {
+            error: `Слишком много IP для запуска: максимум ${scannerSettings.maxScanIps}`,
+          });
+
+        const total = ips.length * rounds;
+        scanProgress = {
+          running: true,
+          completed: 0,
+          total,
+          codIndex: 1,
+          codTotal: 1,
+          currentCod: cod.name,
+          startedAt: new Date().toISOString(),
+          cancelRequested: false,
+          cancelled: false,
+        };
+        progressStarted = true;
+        const observations = new Array(total);
+        let nextIndex = 0;
+        const worker = async () => {
+          while (!signal.aborted) {
+            const index = nextIndex++;
+            if (index >= total) return;
+            const ip = ips[index % ips.length];
+            let device;
+            try {
+              device = await scanOne(ip, protocol, signal);
+            } catch (error) {
+              if (signal.aborted || error.name === 'AbortError') return;
+              throw error;
+            }
+            if (signal.aborted) return;
+            observations[index] = {
+              ip,
+              round: Math.floor(index / ips.length) + 1,
+              online: Boolean(device.online),
+              identity: {
+                serialNumber: device.serialNumber || '',
+                model: device.model || '',
+                version: device.version || '',
+                boardModel: device.boardModel || '',
+              },
+              mac: await readNeighborMac(ip),
+            };
+            scanProgress.completed = ++completed;
+          }
+        };
+        let completed = 0;
+        await Promise.all(
+          Array.from({ length: Math.min(scannerSettings.batchSize, total) }, () => worker()),
+        );
+        const completeObservations = observations.filter(Boolean);
+        const results = analyzeIpObservations(completeObservations);
+        return json(res, 200, {
+          codId: cod.id,
+          codName: cod.name,
+          protocol,
+          rounds,
+          scannedAt: new Date().toISOString(),
+          scanSummary: {
+            totalIps: ips.length,
+            completedObservations: completeObservations.length,
+            confirmed: results.filter((item) => item.status === 'confirmed').length,
+            possible: results.filter((item) => item.status === 'possible').length,
+          },
+          results,
+          observations: completeObservations,
+          cancelled: signal.aborted,
+        });
+      } finally {
+        if (progressStarted) {
+          scanProgress.running = false;
+          scanProgress.cancelled = signal.aborted;
+          scanProgress.cancelRequested = false;
+          scanProgress.finishedAt = new Date().toISOString();
+        }
+        if (activeScanController === controller) activeScanController = null;
+        scanLock = false;
       }
     }
     // Одиночный запуск предпочитает валидные IP карты; при пустой карте сканирует заданный диапазон.

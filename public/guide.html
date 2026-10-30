@@ -32,6 +32,7 @@
         <a class="rail-link scan-anchor" href="/#scan"><span>◉</span> Сканирование</a
         ><a class="rail-link" href="/maps.html"><span>▦</span> Карты и результат</a
         ><a class="rail-link" href="/map-builder.html"><span>⚙</span> Настройка карт</a
+        ><a class="rail-link" href="/ip-conflicts.html"><span>⌕</span> Конфликты IP</a
         ><a class="rail-link" href="/#mixes"><span>◌</span> Миксы</a
         ><a class="rail-link" href="/#board-control"><span>⚙</span> Управление платами</a>
         <div class="rail-spacer"></div>
@@ -61,7 +62,7 @@
             <a href="#start">Начало работы</a><a href="#scan">Сканирование</a
             ><a href="#scan-settings">Настройки сканирования</a><a href="#maps">Карты</a
             ><a href="#mixes">Миксы и роли</a><a href="#boards">Управление платами</a
-            ><a href="#faults">Неисправности и печать</a>
+            ><a href="#faults">Неисправности и печать</a><a href="#ip-conflicts">Конфликты IP</a>
           </nav>
         </header>
         <section class="guide-section" id="start">
@@ -194,6 +195,26 @@
               />
               <figcaption>Выбор реципиентов для применения изменений</figcaption>
             </figure>
+          </div>
+        </section>
+        <section class="guide-section" id="ip-conflicts">
+          <div class="guide-number">07</div>
+          <div>
+            <h2>Проверка задвоений IP</h2>
+            <p>
+              В боковом меню откройте «Конфликты IP», выберите ЦОД, число раундов (2–6) и протокол,
+              затем запустите проверку. Если настроена карта ЦОДа, проверяются её адреса; иначе
+              используется диапазон/CIDR. Каждый адрес повторно опрашивается несколько раз, что
+              увеличивает трафик и время проверки.
+            </p>
+            <p>
+              Разные серийные номера — сильный сигнал, если прошивка возвращает их API. Разные MAC
+              читаются из таблицы соседей компьютера и наиболее полезны в той же VLAN. Различия в
+              модели/версии/платах требуют ручной проверки и сами по себе конфликт не доказывают.
+              Через роутер MAC может относиться к шлюзу; пустой список находок также не гарантирует
+              отсутствия нескольких устройств за одним IP. Для подтверждения проверьте DHCP и
+              таблицу MAC-адресов/портов коммутатора.
+            </p>
           </div>
         </section>
         <section class="guide-section" id="faults">

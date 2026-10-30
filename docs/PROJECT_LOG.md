@@ -1,5 +1,13 @@
 # Журнал проекта и план развития
 
+## 2026-10-30 — IP conflict detector
+
+- Добавлен самостоятельный раздел `/ip-conflicts.html` и API `POST /api/ip-conflicts`. Используются существующая карта/диапазон ЦОДа, Braiins REST/gRPC/legacy scanner pipeline, общий прогресс и общая отмена сканирования.
+- Классификация различает несколько серийных номеров (сильный сигнал), MAC из локальной таблицы соседей без серийного номера (сильный лишь в локальном L2 сегменте) и несовпадение модели/версии/плат (только повод для проверки).
+- Добавлены unit-тесты алгоритма, инструкция пользователя/API и навигация по разделу.
+- Автоматические тесты и статический анализ выполняются командой `npm run check`. Реальные ASIC не опрашивались в среде разработки; на рабочей VLAN необходимо отдельно проверить какие serial-поля публикует установленная Braiins OS и как ведут себя ARP/neigh записи.
+- Ограничение: без уникального serial (или доступной локальной ARP-таблицы) повторные идентичные ответы не позволяют достоверно отличить два ASIC, поочерёдно отвечающих с одним IP. Для окончательной проверки используйте DHCP и FDB/MAC-таблицу коммутатора.
+
 Последнее обновление: 2026-10-19  
 Текущая версия: 1.1.0  
 Целевая среда: Windows 11, доменный ПК, запуск от обычного пользователя, один компьютер без отдельного сервера.
@@ -82,20 +90,23 @@
 ## 2026-10-24 — v1.1.1: scan timing and navigation
 
 ### Fixed
+
 - The map-results table previously tried to display `durationMs`, while the server emits `scanDurationMs`; the row mapping also omitted duration and protocol. It now displays the correct full scan duration and protocol.
 
 ### Added
+
 - Each IP scan now records `responseTimeMs` in milliseconds, measured around the full selected scan/fallback attempt. `scanDurationMs` remains present on each device for compatibility.
 - The datacenter summary shows minimum, maximum and arithmetic mean latency among devices that successfully responded. Offline devices are not included in the latency statistics, but remain represented in the offline count.
 - The main ASIC result table displays per-device response time. Map-cell tooltips include it too.
 - All three pages now share the same navigation entries and grouped datacenter list.
 
 ### Validation and limitations
+
 - Static syntax checks passed for the server and all relevant client scripts.
 - Actual REST/gRPC/TCP timing against production ASICs was not performed during this patch. Latency reflects total time spent in the selected protocol flow, including fallback attempts when `auto` is selected; it is not a pure network RTT measurement.
 
-
 ## 2026-10-24 — версия 1.1.2
+
 - Исправлено различие областей сканирования: `/api/scan` теперь использует список IP из `maps.json`, если он настроен и содержит адреса. В противном случае сохраняется совместимость со сканированием диапазона.
 - Дедупликация IP из карты предотвращает повторные запросы к одному устройству.
 - Статистика отклика в сводной таблице карты отображается компактными блоками MIN / СР. / MAX.

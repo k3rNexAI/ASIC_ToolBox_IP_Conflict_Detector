@@ -1,14 +1,14 @@
 {
   "name": "asic-mix-control",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "private": true,
   "description": "Локальный инструмент сканирования Braiins OS ASIC, расчёта миксов, мониторинга и резервного копирования",
   "type": "module",
   "scripts": {
     "start": "node server.js",
     "build:windows": "node scripts/build-sea.mjs",
-    "format": "prettier --write launcher.js launcher.cjs miner-compat.js mix-algorithm.js server.js state.js scripts/*.mjs test/*.js public/*.js public/*.html public/*.css package.json .prettierrc.json",
-    "check": "node --check server.js && node --check scripts/build-sea.mjs && node --check mix-algorithm.js && node --check test/mix-algorithm.test.js && node test/mix-algorithm.test.js && node --check miner-compat.js && node --check test/miner-compat.test.js && node test/miner-compat.test.js && node --check public/app.js && node --check public/maps.js && node --check public/scanner-settings.js && node --check public/guide.js && node --check public/theme.js && node --check launcher.cjs"
+    "format": "prettier --write launcher.js launcher.cjs ip-conflicts.js miner-compat.js mix-algorithm.js server.js state.js scripts/*.mjs test/*.js public/*.js public/*.html public/*.css package.json .prettierrc.json",
+    "check": "node --check server.js && node --check scripts/build-sea.mjs && node --check mix-algorithm.js && node --check test/mix-algorithm.test.js && node test/mix-algorithm.test.js && node --check miner-compat.js && node --check test/miner-compat.test.js && node test/miner-compat.test.js && node --check ip-conflicts.js && node --check test/ip-conflicts.test.js && node test/ip-conflicts.test.js && node --check public/app.js && node --check public/maps.js && node --check public/ip-conflicts.js && node --check public/scanner-settings.js && node --check public/guide.js && node --check public/theme.js && node --check launcher.cjs"
   },
   "dependencies": {
     "ssh2": "^1.17.0"
