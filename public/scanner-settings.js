@@ -12,7 +12,7 @@
             <header><strong>Основные настройки</strong><small>Общие параметры каждого запуска</small></header>
             <div class="scan-settings-main-fields">
               <label>Протокол по умолчанию
-                <select id="mapProtocol"><option value="hybrid">Быстрый CGMiner скан + детали только проблемных</option><option value="rest">REST API — только REST, без CGMiner</option><option value="auto">Авто: REST → gRPC → CGMiner (последовательно)</option><option value="grpc">gRPC</option><option value="legacy">CGMiner / стоковый TCP 4028</option></select>
+                <select id="mapProtocol"><option value="hybrid">CGMiner API (TCP 4028) + детали проблемных (БЫСТРЫЙ НО НЕ ТОЧНЫЙ)</option><option value="rest">REST API — только REST (БЫСТРЫЙ И ТОЧНЫЙ)</option><option value="auto">REST → gRPC → CGMiner (последовательно)</option><option value="grpc">gRPC</option><option value="legacy">CGMiner / стоковый TCP 4028(БЕЗ ДЕТАЛЕЙ ПРОБЛЕМНЫХ)</option></select>
               </label>
               <label>Размер пачки ASIC<input id="scanBatchSize" type="number" min="1" max="256" step="1" required></label>
               <label>Максимум IP за запуск<input id="scanMaxIps" type="number" min="1" max="65536" step="1" required></label>
@@ -35,7 +35,7 @@
                 <label>Таймаут, мс<input id="scanGrpcTimeout" type="number" min="3000" max="30000" step="500" required></label>
               </fieldset>
               <fieldset class="scan-protocol-card">
-                <legend>TCP / BOSminer</legend>
+                <legend>TCP 4028 / CGMiner</legend>
                 <label>Порт<input id="scanLegacyPort" type="number" min="1" max="65535" step="1" required></label>
                 <label>Таймаут, мс<input id="scanLegacyTimeout" type="number" min="300" max="20000" step="100" required></label>
               </fieldset>
@@ -53,7 +53,7 @@
             </div>
           </section>
         </div>
-        <p class="scan-settings-note">Гибридный режим по умолчанию использует CGMiner/TCP 4028 для быстрого прохода всех ASIC. Подробный REST-опрос выполняется только для проблемных Braiins ASIC; SSH-проверка NoPIC не задерживает массовый скан. «Авто» проверяет REST → gRPC → CGMiner последовательно и может быть медленнее. Сканирование и мониторинг не запускаются одновременно. Пароль маскируется и хранится локально; настройки применяются сразу.</p>
+        // <p class="scan-settings-note">Гибридный режим по умолчанию использует CGMiner/TCP 4028 для быстрого прохода всех ASIC. Подробный REST-опрос выполняется только для проблемных Braiins ASIC; SSH-проверка NoPIC не задерживает массовый скан. «Авто» проверяет REST → gRPC → CGMiner последовательно и может быть медленнее. Сканирование и мониторинг не запускаются одновременно. Пароль маскируется и хранится локально; настройки применяются сразу.</p>
         <div class="scan-settings-actions"><button id="applyScanSettings" class="button primary small-button" type="submit">Применить настройки</button><span id="scanSettingsStatus" role="status" aria-live="polite">Загрузка настроек…</span></div>
       </form>
     </details>`;
