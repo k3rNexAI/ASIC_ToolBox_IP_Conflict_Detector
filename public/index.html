@@ -144,12 +144,12 @@
               ><input type="checkbox" id="useGrpc" /><span></span><strong>gRPC 50051</strong
               ><small>Braiins Public API</small></label
             ><label class="toggle protocol-toggle"
-              ><input type="checkbox" id="useLegacy" /><span></span><strong>TCP 4028</strong
+              ><input type="checkbox" id="useLegacy" /><span></span><strong>TCP 4028 (ДЛЯ МИКСОВ НЕ ИСПОЛЬЗОВАТЬ)</strong
               ><small>legacy CGMiner API (ДЛЯ МИКСОВ НЕ ИСПОЛЬЗОВАТЬ)</small></label
             >
             <div class="protocol-note">
               При выборе нескольких протоколов они используются по очереди: REST → gRPC → TCP 4028.
-              Журнал ошибок запрашивается в каждом доступном API.
+              Журнал ошибок запрашивается в каждом доступном API. TCP 4028 ГРУППИРУЕТ ПО УСТРОЙСТВАМ ВМЕСТО ПЛАТ!!!
             </div>
           </div>
           <div class="scan-caption">
