@@ -870,7 +870,7 @@ html[data-theme='soft-dark'] .rack-map.result-map .map-device small {
 .rail-ec > summary {
   min-height: 34px;
   padding: 7px 9px;
-  border-left: 2px solid var(--line);
+  : 2px solid var(--line);
   border-radius: 5px;
   background: transparent !important;
   color: var(--muted);
@@ -879,7 +879,7 @@ html[data-theme='soft-dark'] .rack-map.result-map .map-device small {
     border-color 0.15s ease;
 }
 .rail-ec[open] > summary {
-  border-left-color: var(--cyan);
+  -color: var(--cyan);
 }
 .rail-ec > summary:hover {
   background: var(--theme-hover, rgba(120, 140, 150, 0.08)) !important;
@@ -887,7 +887,7 @@ html[data-theme='soft-dark'] .rack-map.result-map .map-device small {
 .rail-ec-items {
   margin: 2px 0 4px 10px;
   padding: 2px 0 3px 5px;
-  border-left: 1px solid var(--line);
+  : 1px solid var(--line);
   background: transparent !important;
 }
 .rail-cod {
@@ -1329,7 +1329,7 @@ html[data-theme='mist-sage'] :is(button:disabled, input:disabled, select:disable
 
 /* The recovered and faulty states retain a visible left rail after theme surfaces override borders. */
 .recovered-green-chip {
-  border-left: 4px solid var(--status-green-border) !important;
+  : 4px solid var(--status-green-border) !important;
   padding-left: 7px;
   color: var(--status-green-text) !important;
   background: var(--status-green-bg) !important;
@@ -1344,7 +1344,7 @@ html[data-theme='mist-sage'] :is(button:disabled, input:disabled, select:disable
   color: var(--readable-muted) !important;
 }
 .red-device-card:not(.recovered) {
-  border-left: 4px solid var(--status-red-border) !important;
+  : 4px solid var(--status-red-border) !important;
   padding-left: 9px;
 }
 .red-device-card:not(.recovered) .red-pill-ratio,
@@ -1354,7 +1354,7 @@ html[data-theme='mist-sage'] :is(button:disabled, input:disabled, select:disable
   border-color: var(--status-red-border) !important;
 }
 .red-device-card.recovered {
-  border-left: 4px solid var(--status-green-border) !important;
+  : 4px solid var(--status-green-border) !important;
   padding-left: 9px;
 }
 .red-device-card.recovered .red-pill-ratio,
@@ -1374,7 +1374,7 @@ html[data-theme='soft-dark']
   ) {
   color: var(--status-red-text) !important;
   background: var(--status-red-bg) !important;
-  border-left: 4px solid var(--status-red-border) !important;
+  /* border-left: 4px solid var(--status-red-border) !important; */
 }
 html[data-theme='mist-sage']
   :is(
@@ -1387,7 +1387,7 @@ html[data-theme='mist-sage']
   ) {
   color: var(--status-red-text) !important;
   background: var(--status-red-bg) !important;
-  border-left: 4px solid var(--status-red-border) !important;
+  /* border-left: 4px solid var(--status-red-border) !important; */
 }
 html[data-theme='soft-dark']
   :is(.recovered-green-list, .recovered-green-chip, .recovered-global-list) {
@@ -1409,7 +1409,7 @@ html[data-theme='soft-dark']
   ) {
   color: #b9e0c8 !important;
   background-color: #31483e !important;
-  border-left: 4px solid #79a88d !important;
+  /* border-left: 4px solid #79a88d !important; */
 }
 html[data-theme='mist-sage']
   :is(
@@ -1421,7 +1421,7 @@ html[data-theme='mist-sage']
   ) {
   color: #356b4f !important;
   background-color: #e5f1e9 !important;
-  border-left: 4px solid #78a889 !important;
+  /* border-left: 4px solid #78a889 !important; */
 }
 html[data-theme='soft-dark']
   :is(.map-device.check, .map-cell.check, .fleet-chip.check, .red-device-card:not(.recovered)) {
@@ -1519,7 +1519,7 @@ html[data-theme='soft-dark'] .map-device.sleep,
 html[data-theme='soft-dark'] .map-device.other-firmware,
 html[data-theme='mist-sage'] .map-device.sleep,
 html[data-theme='mist-sage'] .map-device.other-firmware {
-  border-left: 4px solid currentColor !important;
+  /* border-left: 4px solid currentColor !important; */
 }
 .t-sleep {
   color: #83bce8 !important;
