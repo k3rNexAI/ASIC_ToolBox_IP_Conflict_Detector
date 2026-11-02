@@ -53,7 +53,7 @@
             </div>
           </section>
         </div>
-        // <p class="scan-settings-note">Гибридный режим по умолчанию использует CGMiner/TCP 4028 для быстрого прохода всех ASIC. Подробный REST-опрос выполняется только для проблемных Braiins ASIC; SSH-проверка NoPIC не задерживает массовый скан. «Авто» проверяет REST → gRPC → CGMiner последовательно и может быть медленнее. Сканирование и мониторинг не запускаются одновременно. Пароль маскируется и хранится локально; настройки применяются сразу.</p>
+        /*<p class="scan-settings-note">Гибридный режим по умолчанию использует CGMiner/TCP 4028 для быстрого прохода всех ASIC. Подробный REST-опрос выполняется только для проблемных Braiins ASIC; SSH-проверка NoPIC не задерживает массовый скан. «Авто» проверяет REST → gRPC → CGMiner последовательно и может быть медленнее. Сканирование и мониторинг не запускаются одновременно. Пароль маскируется и хранится локально; настройки применяются сразу.</p>*/
         <div class="scan-settings-actions"><button id="applyScanSettings" class="button primary small-button" type="submit">Применить настройки</button><span id="scanSettingsStatus" role="status" aria-live="polite">Загрузка настроек…</span></div>
       </form>
     </details>`;
