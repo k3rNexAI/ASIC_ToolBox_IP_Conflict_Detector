@@ -1878,8 +1878,8 @@ const server = http.createServer(async (req, res) => {
         const cod = (await readCods()).find((x) => x.id === b.codId);
         if (!cod) return json(res, 404, { error: 'ЦОД не найден' });
         const rounds = Number(b.rounds);
-        if (!Number.isInteger(rounds) || rounds < 2 || rounds > 6)
-          return json(res, 400, { error: 'Число раундов должно быть от 2 до 6' });
+        if (!Number.isInteger(rounds) || rounds < 2 || rounds > 100)
+          return json(res, 400, { error: 'Число раундов должно быть от 2 до 100' });
         const protocol = validScanProtocols.has(b.protocol) ? b.protocol : scannerSettings.protocol;
         const maps = await readMaps();
         const cells = maps[cod.id]?.cells;
