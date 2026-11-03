@@ -88,7 +88,7 @@ $('#runBtn').onclick = async () => {
   const codId = $('#codSelect').value;
   const rounds = Number($('#rounds').value);
   if (!codId) return;
-  if (!Number.isInteger(rounds) || rounds < 2 || rounds > 6) {
+  if (!Number.isInteger(rounds) || rounds < 2 || rounds > 100) {
     $('#rounds').focus();
     return;
   }
