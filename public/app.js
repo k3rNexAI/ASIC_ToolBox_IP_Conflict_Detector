@@ -280,11 +280,19 @@ function printLabelEntries(entries) {
   const w = window.open('', '_blank', 'width=600,height=800');
   // Окно печати открывается браузером; если всплывающие окна запрещены, window.open вернёт пустое значение, поэтому показываем понятное сообщение и прекращаем печать.
   if (!w) return toast('Браузер заблокировал окно печати');
+  const printedAt = new Intl.DateTimeFormat('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(new Date());
   w.document.write(
     `<!doctype html><html><head><meta charset="utf-8"><title>Этикетки</title><style>@page{size:58mm auto;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif}.label{width:58mm;min-height:32mm;padding:2.5mm 3mm 2mm;border-bottom:1px dashed #999;page-break-after:always;position:relative}.label-head{display:flex;justify-content:space-between;align-items:flex-start;gap:2mm}.ip{font-size:14pt;font-weight:800;letter-spacing:0;white-space:nowrap;line-height:1.05}.role{font-size:12pt;font-weight:800;text-align:right;line-height:1.1;word-wrap:break-word}.models{font-size:9pt;font-weight:700;line-height:1.1;margin-top:3mm;max-width:52mm;word-wrap:break-word}.failed{font-size:14pt;font-weight:800;line-height:1.1;margin-top:3mm}.hint{display:none}@media screen{body{background:#eee}.label{background:#fff;margin:8px auto;box-shadow:0 1px 5px #999}}@media print{.label:last-child{page-break-after:auto}}</style></head><body>${entries
       .map((x) => {
         const parts = x.ip.split('.');
-        return `<div class="label"><div class="label-head"><div class="ip">${escapeHtml(parts.slice(-2).join('.'))}</div><div class="role">${escapeHtml(x.role)}</div></div><div class="models">${escapeHtml(x.models)}</div><div class="failed">${escapeHtml(x.failed)}</div></div>`;
+        return `<div class="label"><div class="label-head"><div class="ip">${escapeHtml(parts.slice(-2).join('.'))}</div><div class="role">${escapeHtml(x.role)}</div></div><div class="models">${escapeHtml(x.models)}</div><div class="failed">${escapeHtml(x.failed)}</div><div style="margin-top:1.5mm;font-size:6pt;line-height:1">${escapeHtml(printedAt)}</div></div>`;
       })
       .join(
         '',

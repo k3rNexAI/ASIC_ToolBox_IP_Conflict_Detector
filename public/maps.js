@@ -618,8 +618,16 @@ function printDefectStickers() {
   if (!manualDefects.length) return;
   const w = window.open('', '_blank', 'width=600,height=800');
   if (!w) return toast('Браузер заблокировал окно печати');
+  const printedAt = new Intl.DateTimeFormat('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(new Date());
   w.document.write(
-    `<!doctype html><html><head><meta charset="utf-8"><title>Неисправные устройства</title><style>@page{size:58mm auto;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif}.label{width:58mm;min-height:32mm;padding:2.5mm 3mm 2mm;border-bottom:1px dashed #999;page-break-after:always}.label-head{display:flex;justify-content:space-between;align-items:flex-start}.ip{font-size:14pt;font-weight:800}.models{font-size:9pt;font-weight:700;margin-top:3mm}.failed{font-size:12pt;font-weight:800;line-height:1.1;margin-top:3mm;word-wrap:break-word}@media screen{body{background:#eee}.label{background:#fff;margin:8px auto;box-shadow:0 1px 5px #999}}@media print{.label:last-child{page-break-after:auto}}</style></head><body>${manualDefects.map((x) => `<div class="label"><div class="label-head"><div class="ip">${esc(String(x.ip).split('.').slice(-2).join('.'))}</div></div><div class="models">${esc(x.models || 'Модель платы не определена')}</div><div class="failed">${esc([...(x.boards || []), x.defect].filter(Boolean).join(' — '))}</div></div>`).join('')}<script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script></body></html>`,
+    `<!doctype html><html><head><meta charset="utf-8"><title>Неисправные устройства</title><style>@page{size:58mm auto;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif}.label{width:58mm;min-height:32mm;padding:2.5mm 3mm 2mm;border-bottom:1px dashed #999;page-break-after:always}.label-head{display:flex;justify-content:space-between;align-items:flex-start}.ip{font-size:14pt;font-weight:800}.models{font-size:9pt;font-weight:700;margin-top:3mm}.failed{font-size:12pt;font-weight:800;line-height:1.1;margin-top:3mm;word-wrap:break-word}@media screen{body{background:#eee}.label{background:#fff;margin:8px auto;box-shadow:0 1px 5px #999}}@media print{.label:last-child{page-break-after:auto}}</style></head><body>${manualDefects.map((x) => `<div class="label"><div class="label-head"><div class="ip">${esc(String(x.ip).split('.').slice(-2).join('.'))}</div></div><div class="models">${esc(x.models || 'Модель платы не определена')}</div><div class="failed">${esc([...(x.boards || []), x.defect].filter(Boolean).join(' — '))}</div><div style="margin-top:1.5mm;font-size:6pt;line-height:1">${esc(printedAt)}</div></div>`).join('')}<script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script></body></html>`,
   );
   w.document.close();
 }
