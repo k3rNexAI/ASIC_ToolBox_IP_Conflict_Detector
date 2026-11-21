@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [feature/ip-duplicate-detector]
+    tags:
+      - 'v*'
     paths:
       - 'server.js'
       - 'miner-compat.js'
@@ -13,6 +15,9 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/build-windows-exe.yml'
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -67,3 +72,35 @@ jobs:
           name: ASIC-ToolBox-Windows-SEA
           path: dist/ASIC ToolBox.exe
           if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release version
+        id: version
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${VERSION#.}"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          if [ "$VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Tag version ($VERSION) must match package.json version ($PACKAGE_VERSION)." >&2
+            exit 1
+          fi
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v4
+        with:
+          name: ASIC-ToolBox-Windows-SEA
+          path: dist
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ASSET="dist/ASIC ToolBox v.${{ steps.version.outputs.value }}.exe"
+          cp "dist/ASIC ToolBox.exe" "$ASSET"
+          gh release create "$GITHUB_REF_NAME" "$ASSET" \
+            --title "ASIC ToolBox v${{ steps.version.outputs.value }}" \
+            --generate-notes
